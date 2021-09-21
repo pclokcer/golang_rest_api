@@ -2,6 +2,7 @@ package controller
 
 import (
 	"net/http"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -11,20 +12,19 @@ type AuthController interface {
 }
 
 type authController struct {
-
 }
 
 func NewAuthController() AuthController {
 	return &authController{}
 }
 
-func (c *authController) Login(ctx *gin.Context)  {
+func (c *authController) Login(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "Logged",
 	})
 }
 
-func (c *authController) Register(ctx *gin.Context)  {
+func (c *authController) Register(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "Registered",
 	})

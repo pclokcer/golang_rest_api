@@ -1,9 +1,12 @@
 package service
 
-import "github.com/dgrijalva/jwt-go"
-import "os"
-import "time"
-import "fmt"
+import (
+	"fmt"
+	"os"
+	"time"
+
+	"github.com/dgrijalva/jwt-go"
+)
 
 type JWTService interface {
 	GenarateToken(userId string) string
@@ -17,17 +20,17 @@ type jwtCustomClaim struct {
 
 type jwtService struct {
 	secretKey string
-	issuer string
+	issuer    string
 }
 
-func NewJWTService() JWTService  {
+func NewJWTService() JWTService {
 	return &jwtService{
-		issuer: "pclokcer",
+		issuer:    "pclokcer",
 		secretKey: getSecretKey(),
 	}
 }
 
-func getSecretKey() string  {
+func getSecretKey() string {
 	secretKey := os.Getenv("JWT_SECRET")
 
 	if secretKey != "" {
@@ -42,8 +45,8 @@ func (j *jwtService) GenarateToken(UserID string) string {
 		UserID,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().AddDate(1, 0, 0).Unix(),
-			Issuer: j.issuer,
-			IssuedAt: time.Now().Unix(),
+			Issuer:    j.issuer,
+			IssuedAt:  time.Now().Unix(),
 		},
 	}
 
@@ -57,7 +60,7 @@ func (j *jwtService) GenarateToken(UserID string) string {
 	return t
 }
 
-func (j *jwtService) ValidateToken(token string) (*jwt.Token, error)  {
+func (j *jwtService) ValidateToken(token string) (*jwt.Token, error) {
 	return jwt.Parse(token, func(t_ *jwt.Token) (interface{}, error) {
 		if _, ok := t_.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method %v", t_.Header["alg"])

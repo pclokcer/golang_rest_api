@@ -1,14 +1,17 @@
 package middleware
 
-import "github.com/pclokcer/service"
-import "github.com/pclokcer/helper"
-import "net/http"
-import "log"
-import "github.com/gin-gonic/gin"
-import "github.com/dgrijalva/jwt-go"
+import (
+	"log"
+	"net/http"
+
+	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
+	"github.com/pclokcer/helper"
+	"github.com/pclokcer/service"
+)
 
 func AuthorizeJWT(jwtService service.JWTService) gin.HandlerFunc {
-	return func (c *gin.Context)  {
+	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 
 		if authHeader == "" {
