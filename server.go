@@ -16,14 +16,18 @@ var (
 )
 
 func main() {
-	r := gin.Default()
+	req := gin.Default()
 
-	authRoutes := r.Group("/api/auth", middleware.AuthorizeJWT(jwtService))
+	authRoutes := req.Group("/api")
 	{
 		authRoutes.POST("/login", authController.Login)
 		authRoutes.POST("/register", authController.Register)
-		authRoutes.GET("/test", authController.Register)
 	}
 
-	r.Run(":3000")
+	generalRequest := req.Group("/api/", middleware.AuthorizeJWT(jwtService))
+	{
+		generalRequest.GET("/users", authController.Login)
+	}
+
+	req.Run(":3000")
 }
