@@ -26,18 +26,8 @@ type jwtService struct {
 func NewJWTService() JWTService {
 	return &jwtService{
 		issuer:    "pclokcer",
-		secretKey: getSecretKey(),
+		secretKey: os.Getenv("JWT_SECRET"),
 	}
-}
-
-func getSecretKey() string {
-	secretKey := os.Getenv("JWT_SECRET")
-
-	if secretKey != "" {
-		secretKey = "pclokcer"
-	}
-
-	return secretKey
 }
 
 func (j *jwtService) GenarateToken(UserID string) string {
