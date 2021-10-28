@@ -17,7 +17,7 @@ var (
 	db                *gorm.DB                     = config.SetupDatabaseConnection()
 	mongoDB           *mongo.Database              = config.MongoConnection()
 	jwtService        service.JWTService           = service.NewJWTService()
-	authController    controller.AuthController    = controller.NewAuthController()
+	authController    controller.AuthController    = controller.NewAuthController(mongoDB)
 	commentController controller.CommentController = controller.NewCommentController(mongoDB)
 )
 
