@@ -14,10 +14,11 @@ import (
 )
 
 var (
-	db             *gorm.DB                  = config.SetupDatabaseConnection()
-	mongoDB        *mongo.Database           = config.MongoConnection()
-	jwtService     service.JWTService        = service.NewJWTService()
-	authController controller.AuthController = controller.NewAuthController()
+	db                *gorm.DB                     = config.SetupDatabaseConnection()
+	mongoDB           *mongo.Database              = config.MongoConnection()
+	jwtService        service.JWTService           = service.NewJWTService()
+	authController    controller.AuthController    = controller.NewAuthController()
+	commentController controller.CommentController = controller.NewCommentController(mongoDB)
 )
 
 func main() {
@@ -39,6 +40,8 @@ func main() {
 	generalRequest := req.Group("/api", middleware.AuthorizeJWT(jwtService))
 	{
 		generalRequest.POST("/users/:param", controller.GetUsers)
+		generalRequest.POST("/get-comments", commentController.All)
+		generalRequest.POST("/set-comment", commentController.SetComment)
 	}
 
 	req.Run(":" + os.Getenv("PORT"))

@@ -33,7 +33,7 @@ func GetUsers(ctx *gin.Context) {
 
 	var responseBody Response
 
-	responseBody.Body = body
+	responseBody.Body = body.Test1
 	responseBody.Param = param
 	responseBody.Query = query
 
