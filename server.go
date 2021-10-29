@@ -19,6 +19,7 @@ var (
 	jwtService        service.JWTService           = service.NewJWTService()
 	authController    controller.AuthController    = controller.NewAuthController(mongoDB)
 	commentController controller.CommentController = controller.NewCommentController(mongoDB)
+	uploadController  controller.UploadController  = controller.NewUploadController()
 )
 
 func main() {
@@ -42,6 +43,7 @@ func main() {
 		generalRequest.POST("/users/:param", controller.GetUsers)
 		generalRequest.POST("/get-comments", commentController.All)
 		generalRequest.POST("/set-comment", commentController.SetComment)
+		generalRequest.POST("/image-upload", uploadController.Upload)
 	}
 
 	req.Run(":" + os.Getenv("PORT"))
