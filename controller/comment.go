@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/pclokcer/entity"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -45,6 +46,14 @@ func (new commentController) SetComment(c *gin.Context) {
 
 	var comment entity.Comment
 	err := c.BindJSON(&comment)
+
+	// Parametrelerde validasyon yapıldı
+	if err := validator.New().Struct(&comment); err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
 
 	if comment.ID != "" {
 		comment.ID = ""

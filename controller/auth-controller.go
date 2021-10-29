@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/pclokcer/dto"
 	"github.com/pclokcer/entity"
 	"github.com/pclokcer/service"
@@ -37,6 +38,14 @@ func (auth *authController) Login(c *gin.Context) {
 
 	if err != nil {
 		panic(err)
+	}
+
+	// Parametrelerde validasyon yapıldı
+	if err := validator.New().Struct(&loginDto); err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": err.Error(),
+		})
+		return
 	}
 
 	// Kullanıcı Bizim tarafımızda var mı diye kontrol edilyor
@@ -82,6 +91,14 @@ func (auth *authController) Register(c *gin.Context) {
 
 	if err != nil {
 		panic(err)
+	}
+
+	// Parametrelerde validasyon yapıldı
+	if err := validator.New().Struct(&login_with); err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": err.Error(),
+		})
+		return
 	}
 
 	// Bu Kullanıcı Zaten Üye mi Diye bakılıyor
