@@ -1,0 +1,3 @@
+NewPerson = "Üyeliğiniz Oluşturuldu"
+ExistUser = "Bu Kullanıcı Zaten Var"
+LoginError = "Kullanıcı Adı veya Şifre Yanlış"

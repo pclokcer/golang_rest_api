@@ -1,0 +1,3 @@
+NewPerson = "Created Your Person"
+ExistUser = "Exist User"
+LoginError = "Username or Password is Incorrect"

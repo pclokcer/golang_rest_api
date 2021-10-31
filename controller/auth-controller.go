@@ -7,8 +7,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/pclokcer/dto"
 	"github.com/pclokcer/entity"
+	"github.com/pclokcer/libs"
 	"github.com/pclokcer/service"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -32,6 +34,9 @@ func NewAuthController(mongo *mongo.Database) AuthController {
 
 func (auth *authController) Login(c *gin.Context) {
 
+	// dil belirleniyor
+	localizer := libs.GetLocalizer(c)
+
 	var loginDto dto.LoginDTO
 
 	err := c.BindJSON(&loginDto)
@@ -54,7 +59,7 @@ func (auth *authController) Login(c *gin.Context) {
 
 	if loginWithsDto.Email == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"message": "Kullanıcı Adı veya Şifre Yanlış",
+			"message": localizer.(*i18n.Localizer).MustLocalize(&i18n.LocalizeConfig{MessageID: "LoginError"}),
 		})
 		return
 	}
@@ -70,7 +75,7 @@ func (auth *authController) Login(c *gin.Context) {
 	// Kullanıcı Şifre comapre ediliyor
 	if nil != bcrypt.CompareHashAndPassword([]byte(loginWithsDto.Password), []byte(loginDto.Password)) {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"message": "Kullanıcı Adı veya Şifre Yanlış",
+			"message": localizer.(*i18n.Localizer).MustLocalize(&i18n.LocalizeConfig{MessageID: "LoginError"}),
 		})
 		return
 	}
@@ -85,6 +90,9 @@ func (auth *authController) Login(c *gin.Context) {
 }
 
 func (auth *authController) Register(c *gin.Context) {
+
+	// dil belirleniyor
+	localizer := libs.GetLocalizer(c)
 
 	var login_with entity.LoginWith
 	err := c.BindJSON(&login_with)
@@ -107,7 +115,7 @@ func (auth *authController) Register(c *gin.Context) {
 
 	if loginWithsDto.Email != "" {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"message": "Bu Kullanıcı Zaten Var",
+			"message": localizer.(*i18n.Localizer).MustLocalize(&i18n.LocalizeConfig{MessageID: "ExistUser"}),
 		})
 		return
 	}
@@ -125,6 +133,6 @@ func (auth *authController) Register(c *gin.Context) {
 
 	fmt.Println(res)
 
-	c.JSON(http.StatusOK, gin.H{"success": "true"})
+	c.JSON(http.StatusOK, gin.H{"success": localizer.(*i18n.Localizer).MustLocalize(&i18n.LocalizeConfig{MessageID: "NewPerson"})})
 
 }
