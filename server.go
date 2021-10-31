@@ -61,6 +61,8 @@ func main() {
 
 	req := gin.Default()
 
+	req.Use(i18nLaunch)
+
 	authRoutes := req.Group("/api")
 	{
 		authRoutes.POST("/login", authController.Login)
