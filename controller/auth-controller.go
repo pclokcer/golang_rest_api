@@ -6,10 +6,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/pclokcer/dto"
-	"github.com/pclokcer/entity"
 	"github.com/pclokcer/libs"
 	"github.com/pclokcer/service"
 	"go.mongodb.org/mongo-driver/bson"
@@ -37,44 +35,22 @@ func (auth *authController) Login(c *gin.Context) {
 	// dil belirleniyor
 	localizer := libs.GetLocalizer(c)
 
-	var loginDto dto.LoginDTO
-
-	err := c.BindJSON(&loginDto)
-
-	if err != nil {
-		panic(err)
-	}
-
-	// Parametrelerde validasyon yapıldı
-	if err := validator.New().Struct(&loginDto); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": err.Error(),
-		})
-		return
-	}
+	loginDto, _ := c.Get("login")
 
 	// Kullanıcı Bizim tarafımızda var mı diye kontrol edilyor
 	var loginWithsDto dto.LoginWithsDTO
-	err = auth.connection.Collection("login_withs").FindOne(context.TODO(), bson.D{{"email", loginDto.Email}}).Decode(&loginWithsDto)
+	auth.connection.Collection("login_withs").FindOne(context.TODO(), bson.D{{"email", loginDto.(dto.LoginDTO).Email}}).Decode(&loginWithsDto)
 
 	if loginWithsDto.Email == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"message": localizer.(*i18n.Localizer).MustLocalize(&i18n.LocalizeConfig{MessageID: "LoginError"}),
 		})
 		return
 	}
 
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			// This error means your query did not match any documents.
-			return
-		}
-		panic(err)
-	}
-
 	// Kullanıcı Şifre comapre ediliyor
-	if nil != bcrypt.CompareHashAndPassword([]byte(loginWithsDto.Password), []byte(loginDto.Password)) {
-		c.JSON(http.StatusUnauthorized, gin.H{
+	if nil != bcrypt.CompareHashAndPassword([]byte(loginWithsDto.Password), []byte(loginDto.(dto.LoginDTO).Password)) {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"message": localizer.(*i18n.Localizer).MustLocalize(&i18n.LocalizeConfig{MessageID: "LoginError"}),
 		})
 		return
@@ -83,9 +59,9 @@ func (auth *authController) Login(c *gin.Context) {
 	// Token üretiliyor
 	token := service.NewJWTService().GenarateToken(loginWithsDto.ID)
 
-	c.JSON(http.StatusOK, gin.H{
+	c.AbortWithStatusJSON(http.StatusOK, gin.H{
 		"token": token,
-		"email": loginDto.Email,
+		"email": loginDto.(dto.LoginDTO).Email,
 	})
 }
 
@@ -94,24 +70,11 @@ func (auth *authController) Register(c *gin.Context) {
 	// dil belirleniyor
 	localizer := libs.GetLocalizer(c)
 
-	var login_with entity.LoginWith
-	err := c.BindJSON(&login_with)
-
-	if err != nil {
-		panic(err)
-	}
-
-	// Parametrelerde validasyon yapıldı
-	if err := validator.New().Struct(&login_with); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": err.Error(),
-		})
-		return
-	}
+	register, _ := c.Get("register")
 
 	// Bu Kullanıcı Zaten Üye mi Diye bakılıyor
 	var loginWithsDto dto.LoginWithsDTO
-	err = auth.connection.Collection("login_withs").FindOne(context.TODO(), bson.D{{"email", login_with.Email}}).Decode(&loginWithsDto)
+	auth.connection.Collection("login_withs").FindOne(context.TODO(), bson.D{{"email", register.(dto.Register).Email}}).Decode(&loginWithsDto)
 
 	if loginWithsDto.Email != "" {
 		c.JSON(http.StatusUnauthorized, gin.H{
@@ -120,12 +83,14 @@ func (auth *authController) Register(c *gin.Context) {
 		return
 	}
 
-	hashPassword, err := bcrypt.GenerateFromPassword([]byte(login_with.Password), 10)
+	hashPassword, err := bcrypt.GenerateFromPassword([]byte(register.(dto.Register).Password), 10)
 
-	login_with.Password = string(hashPassword)
+	var regiserData dto.LoginWithsDTO
+	regiserData.Password = string(hashPassword)
+	regiserData.Email = register.(dto.Register).Email
 
 	// Kullanıcı Kaydı Yapılıyor
-	res, err := auth.connection.Collection("login_withs").InsertOne(context.Background(), login_with)
+	res, err := auth.connection.Collection("login_withs").InsertOne(context.Background(), regiserData)
 
 	if err != nil {
 		panic(err)
