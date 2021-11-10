@@ -2,7 +2,6 @@ package controller
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -77,27 +76,21 @@ func (auth *authController) Register(c *gin.Context) {
 	auth.connection.Collection("login_withs").FindOne(context.TODO(), bson.D{{"email", register.(dto.Register).Email}}).Decode(&loginWithsDto)
 
 	if loginWithsDto.Email != "" {
-		c.JSON(http.StatusUnauthorized, gin.H{
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"message": localizer.(*i18n.Localizer).MustLocalize(&i18n.LocalizeConfig{MessageID: "ExistUser"}),
 		})
 		return
 	}
 
-	hashPassword, err := bcrypt.GenerateFromPassword([]byte(register.(dto.Register).Password), 10)
+	hashPassword, _ := bcrypt.GenerateFromPassword([]byte(register.(dto.Register).Password), 10)
 
 	var regiserData dto.LoginWithsDTO
 	regiserData.Password = string(hashPassword)
 	regiserData.Email = register.(dto.Register).Email
 
 	// Kullanıcı Kaydı Yapılıyor
-	res, err := auth.connection.Collection("login_withs").InsertOne(context.Background(), regiserData)
+	auth.connection.Collection("login_withs").InsertOne(context.Background(), regiserData)
 
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(res)
-
-	c.JSON(http.StatusOK, gin.H{"success": localizer.(*i18n.Localizer).MustLocalize(&i18n.LocalizeConfig{MessageID: "NewPerson"})})
+	c.AbortWithStatusJSON(http.StatusOK, gin.H{"success": localizer.(*i18n.Localizer).MustLocalize(&i18n.LocalizeConfig{MessageID: "NewPerson"})})
 
 }
